@@ -24,13 +24,11 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v2
-########### matlab generates the test data
-      - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab@v2
-      - name: Run script
-        uses: matlab-actions/run-command@v2
+########### octave generates the test data
+      - name: Run tests
+        uses: repos4u/octave-action@v1
         with:
-          command: cd("test"), gentestdata
+          command: cd('test'); source('gentestdata.m');
 ########## run the julia tests
       - uses: julia-actions/setup-julia@v1
         with:
