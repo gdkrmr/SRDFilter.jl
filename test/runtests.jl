@@ -50,6 +50,8 @@ par_to_testresult(method, filename, deg, m, T) =
                         y1 = smoothMS1(x, deg, m)
                         @test y ≈ testres_ms[:, ci]
                         @test y1 ≈ testres_ms1[:, ci]
+                        @test eltype(testres_ms) == eltype(y)
+                        @test eltype(testres_ms1) == eltype(y1)
                     end
                 end
             end

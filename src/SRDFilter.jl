@@ -34,7 +34,7 @@ specifies the degree of the polinomial and `m` the halfwidth of the kernel.
 """
 function smoothMS(data::AbstractVector{T}, deg::Int, m::Int) where T
     kernel = kernelMS(deg, m, T)
-    fitWeights = edgeWeights(deg, m)
+    fitWeights = edgeWeights(deg, m, T)
     extData = extendData(data, m, fitWeights)
     smoothedExtData = conv(extData, kernel, "same")
     return smoothedExtData[m + 1:end - m]
@@ -50,7 +50,7 @@ specifies the degree of the polinomial and `m` the halfwidth of the kernel.
 """
 function smoothMS1(data::AbstractVector{T}, deg::Int, m::Int) where T
     kernel = kernelMS1(deg, m, T)
-    fitWeights = edgeWeights1(deg, m)
+    fitWeights = edgeWeights1(deg, m, T)
     extData = extendData(data, m, fitWeights)
     smoothedExtData = conv(extData, kernel, "same")
     return smoothedExtData[m + 1:end - m]
@@ -105,7 +105,7 @@ function kernelMS(deg::Int, m::Int, T::Type)
     for (i, row) in enumerate(eachrow(coeffs))
         kappa[i] = row[1] + row[2] / (row[3] - m)^3
     end
-    nuMinus2 = (rem(T(deg) / 2, 2) == 1) ? -1 : 0
+    nuMinus2 = (rem(T(deg) / 2, 2) == 1) ? T(-1) : T(0)
     kernel = zeros(T, m * 2 + 1)
     kernel[m+1] = windowMS(T(0), 4) # center element
     for i in 1:m
@@ -137,7 +137,7 @@ function kernelMS1(deg::Int, m::Int, T::Type)
         w = windowMS(x, 2)
         a = sin((T(deg) / 2 + 1) * pi * x) / ((T(deg) / 2 + 1) * pi * x)
         for (j, k) in enumerate(kappa)
-            a += k * x * sin(j * pi * x)
+            a += k * x * sin(x * j * pi)
         end
         a *= w
         kernel[m + 1 - i] = a
@@ -153,11 +153,11 @@ This function behaves the same way as the conv function in
 Matlab/Octave, here only the "same" option is implemented.
 
 """
-function conv(x, y, shape = "same")
+function conv(x::Vector{T}, y::Vector{T}, shape = "same") where T
     nx = length(x)
     ny = length(y)
     nz = nx + ny - 1
-    z = zeros(nz)
+    z = zeros(T, nz)
     for i in 1:nz
         for j in max(1, i - ny + 1):min(i, nx)
             z[i] += x[j] * y[i - j + 1]
@@ -169,11 +169,9 @@ function conv(x, y, shape = "same")
     return z[istart:iend]
 end
 
-cube(x) = x * x * x
-
 # Weighted linear fit of the data.
 # All inputs must be row vectors of equal length.
-function  fitWeighted(xData::AbstractVector, yData::AbstractVector, weights)
+function  fitWeighted(xData::AbstractVector{T}, yData::Vector{T}, weights) where T
     sumWeights = sum(weights)
     sumX  = sum(xData .* weights)
     sumY  = sum(yData .* weights)
@@ -181,7 +179,7 @@ function  fitWeighted(xData::AbstractVector, yData::AbstractVector, weights)
     sumXY = sum(xData .* yData .* weights)
     varX2 = sumX2 * sumWeights - sumX * sumX
     if varX2 == 0
-        slope = 0
+        slope = T(0)
     else
         slope = (sumXY * sumWeights - sumX * sumY) / varX2
     end
@@ -189,12 +187,12 @@ function  fitWeighted(xData::AbstractVector, yData::AbstractVector, weights)
     return offset, slope
 end
 
-function extendData(data, m, fitWeights)
+function extendData(data::Vector{T}, m, fitWeights::Vector{T}) where T
     datLength = length(data)
-    extData = zeros(datLength + 2*m)
+    extData = zeros(T, datLength + 2*m)
     fitLength = length(fitWeights)
-    fitX = 1:fitLength
     fitY = data[1:fitLength]
+    fitX = T(1):T(fitLength)
     offset, slope = fitWeighted(fitX, fitY, fitWeights)
     #fitBasis = [ones(1, fitLength) 1:fitLength];
     #[params] = LinearRegression (fitBasis', fitY', fitWeights')
@@ -217,26 +215,26 @@ function windowMS(x::T, alpha) where T
 end
 
 # Hann-square weights for linear fit at the edges, for MS smoothing.
-function edgeWeights(deg, m)
-    beta = 0.70 + 0.14 * exp(-0.6 * (deg - 4))
-    fitLengthD = ((m + 1) * beta)/(1.5 + 0.5 * deg)
+function edgeWeights(deg, m, T)
+    beta = T(0.70) + T(0.14) * exp(T(-0.6) * (deg - 4))
+    fitLengthD = ((m + 1) * beta)/(T(1.5) + T(0.5) * deg)
     fitLength = floor(Int, fitLengthD)
-    w = zeros(fitLength + 1)
+    w = zeros(T, fitLength + 1)
     for i in 1:fitLength + 1
-        cosine = cos(pi / 2 * (i - 1) / fitLengthD)
+        cosine = cos(T(pi) / 2 * (i - 1) / fitLengthD)
         w[i] = cosine^2
     end
     return w
 end
 
 # Hann-square weights for linear fit at the edges, for MS1 smoothing.
-function edgeWeights1(deg, m)
-    beta = 0.65 + 0.35*exp(-0.55*(deg-4))
-    fitLengthD = ((m+1)*beta)/(1+0.5*deg)
+function edgeWeights1(deg, m, T)
+    beta = T(0.65) + T(0.35) * exp(T(-0.55) * (deg - 4))
+    fitLengthD = ((m + 1) * beta) / (1 + T(0.5) * deg)
     fitLength = floor(Int, fitLengthD)
-    w = zeros(fitLength + 1)
-    for i in 1:fitLength+1
-        cosine = cos(pi/2*(i-1)/fitLengthD)
+    w = zeros(T, fitLength + 1)
+    for i in 1:fitLength + 1
+        cosine = cos(T(pi) / 2 * (i - 1) / fitLengthD)
         w[i] = cosine^2
     end
     return w
