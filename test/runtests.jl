@@ -10,6 +10,7 @@ Ts = [Float64, Float32]
 
 
 
+# This one runs the example from the original code
 @testset "example test" begin
     deg = 6 # degree
     m = 7   # kernel halfwidth
