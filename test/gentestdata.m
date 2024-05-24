@@ -40,13 +40,12 @@ for fi = 1:numel(filescsv)
         % add smoothed data
         csv_data_smooth = [csv_data_smooth, out];
         csv_data_smooth1 = [csv_data_smooth1, out1];
-      endfor
+      end
       % save data
       csv_smooth_filename = strcat("data/smooth/MS_", filename(1:end - 4), "_", "deg_", num2str(d), "_", "m_", num2str(m), ".csv");
       csv_smooth1_filename = strcat("data/smooth/MS1_", filename(1:end - 4), "_", "deg_", num2str(d), "_", "m_", num2str(m), ".csv");
       csvwrite(csv_smooth_filename, csv_data_smooth);
       csvwrite(csv_smooth1_filename, csv_data_smooth1);
-    endfor
-  endfor
-endfor
-
+    end
+  end
+end
