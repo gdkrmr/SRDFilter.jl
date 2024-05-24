@@ -1,4 +1,3 @@
-
 """
     SRDFilter
 
@@ -60,11 +59,11 @@ end
 # Correction coeffficients for a flat passband of the MS kernel
 function corrCoeffsMS(deg::Int, T::Type)
     if deg == 2
-        return T[]
+        return Matrix{T}(undef, 0, 0)
     elseif deg == 4
-        return T[]
+        return Matrix{T}(undef, 0, 0)
     elseif deg == 6
-        return T[0.001717576 0.02437382 1.64375]
+        return T[0.001717576 0.02437382 1.64375;]
     elseif deg == 8
         return T[0.0043993373 0.088211164 2.359375;
                 0.006146815 0.024715371 3.6359375]
@@ -79,9 +78,9 @@ end
 # Correction coeffficients for a flat passband of the MS1 kernel
 function corrCoeffsMS1(deg::Int, T::Type)
     if deg == 2
-        return T[]
+        return Matrix{T}(undef, 0, 0)
     elseif deg == 4
-        return T[0.021944195 0.050284006 0.765625]
+        return T[0.021944195 0.050284006 0.765625;]
     elseif deg == 6
         return T[0.001897730 0.00847681 1.2625;
                  0.023064667 0.13047926 1.2265625]
