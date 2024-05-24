@@ -7,7 +7,7 @@
 
 
 
-## source("sincsmoother.m")
+% source("sincsmoother.m")
 
 % parameters, will iterate over all combinations
 degs = [2, 4, 6, 8, 10];
