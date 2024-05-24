@@ -46,8 +46,8 @@ par_to_testresult(method, filename, deg, m, T) =
                     testres_ms1 = par_to_testresult("MS1", file, deg, m, T)
                     for ci in 1:size(data, 2)
                         x = testdata[:, ci]
-                        y = smoothMS(x, deg, m)
-                        y1 = smoothMS1(x, deg, m)
+                        y = smoothMS(x, deg = deg, m = m)
+                        y1 = smoothMS1(x, deg = deg, m = m)
                         @test y ≈ testres_ms[:, ci]
                         @test y1 ≈ testres_ms1[:, ci]
                         @test eltype(testres_ms) == eltype(y)
