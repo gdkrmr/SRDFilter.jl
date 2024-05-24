@@ -7,7 +7,7 @@
 
 
 
-% source("sincsmoother.m")
+source("sincsmoother.m")
 
 % parameters, will iterate over all combinations
 degs = [2, 4, 6, 8, 10];
@@ -15,9 +15,7 @@ ms = 1:10;
 
 
 % get csv files in "data/" directory
-% files = readdir("data");
-files = dir('data');
-files = {files.name}.';
+files = readdir("data");
 
 idxs = strfind(files, ".csv");
 filescsvidx = cellfun(@(x) length(x) > 0, idxs);
