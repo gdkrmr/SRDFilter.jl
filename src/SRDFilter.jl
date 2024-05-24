@@ -40,6 +40,8 @@ function smoothMS(data::AbstractVector{T}, deg::Int, m::Int) where T
     return smoothedExtData[m + 1:end - m]
 end
 
+smoothMS(data; deg=4, m=6) = smoothMS(data, deg, m)
+
 # The same with the shorter MS1 kernel
 """
     smoothMS1(data::AbstractVector{T}, deg::Int, m::Int) where T
@@ -48,13 +50,14 @@ Smoothes a vector `data` with a modified sinc kernel. The `deg` parameter
 specifies the degree of the polinomial and `m` the halfwidth of the kernel.
 
 """
-function smoothMS1(data::AbstractVector{T}, deg::Int, m::Int) where T
+function smoothMS1(data::AbstractVector{T}, deg::Int, m::Int) where {T}
     kernel = kernelMS1(deg, m, T)
     fitWeights = edgeWeights1(deg, m, T)
     extData = extendData(data, m, fitWeights)
     smoothedExtData = conv(extData, kernel, "same")
-    return smoothedExtData[m + 1:end - m]
+    return smoothedExtData[m+1:end-m]
 end
+smoothMS1(data; deg=4, m=6) = smoothMS1(data, deg, m)
 
 # TODO: Make these static?
 # Correction coeffficients for a flat passband of the MS kernel
