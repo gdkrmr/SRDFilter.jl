@@ -15,7 +15,10 @@ ms = 1:10;
 
 
 % get csv files in "data/" directory
-files = readdir("data");
+% files = readdir("data");
+files = dir('data');
+files = {files.name}.';
+
 idxs = strfind(files, ".csv");
 filescsvidx = cellfun(@(x) length(x) > 0, idxs);
 filescsv = files(filescsvidx);
