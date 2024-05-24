@@ -1,40 +1,40 @@
-# Octave implementation of smoothing by a modified sinc
-# kernel (MS), as described in M. Schmid, D. Rath and U. Diebold,
-# 'Why and how Savitzky-Golay filters should be replaced',
-# ACS Measurement Science Au, 2022 
-#
-# The term 'degree' (variable 'deg' to avoid conflict with the
-# Matlab 'degree' function) is defined in analogy to Savitzky-Golay
-# (SG) filters; the MS filters have a similar frequency response as SG filters
-# of the same deg (2, 4, ... 10).
-#
-# Note: This file contains more than one function, therefore it is not a
-# function file but rather a script file.
-# For actual usage, delete the test code at the very end and
-# include it in your code with 'source("modifiedSincSmoother.m")'
-# When using only one smooth type (smoothMS _or_ smoothMS1),
-# this file may be converted to a single-function file by renaming
-# according to the name of the main function and placing the other
-# functions as inner functions. The, delete the following line.
-1;# this line avoids this being a single-function file.
-#
-# Copyright notice
-# This code is licensed under GNU General Public License (GPLv3)
-# When using and/or modifying this program for scientific work
-# and the paper on it has been published, please cite the paper.
-#
-#  Author: Michael Schmid, IAP/TU Wien, 2021.
-#          https://www.iap.tuwien.ac.at/www/surface/group/schmid
+% Octave implementation of smoothing by a modified sinc
+% kernel (MS), as described in M. Schmid, D. Rath and U. Diebold,
+% 'Why and how Savitzky-Golay filters should be replaced',
+% ACS Measurement Science Au, 2022 
+%
+% The term 'degree' (variable 'deg' to avoid conflict with the
+% Matlab 'degree' function) is defined in analogy to Savitzky-Golay
+% (SG) filters; the MS filters have a similar frequency response as SG filters
+% of the same deg (2, 4, ... 10).
+%
+% Note: This file contains more than one function, therefore it is not a
+% function file but rather a script file.
+% For actual usage, delete the test code at the very end and
+% include it in your code with 'source("modifiedSincSmoother.m")'
+% When using only one smooth type (smoothMS _or_ smoothMS1),
+% this file may be converted to a single-function file by renaming
+% according to the name of the main function and placing the other
+% functions as inner functions. The, delete the following line.
+1;% this line avoids this being a single-function file.
+%
+% Copyright notice
+% This code is licensed under GNU General Public License (GPLv3)
+% When using and/or modifying this program for scientific work
+% and the paper on it has been published, please cite the paper.
+%
+%  Author: Michael Schmid, IAP/TU Wien, 2021.
+%          https://www.iap.tuwien.ac.at/www/surface/group/schmid
 
 
-# This function smooths the data all the way to the boundaries
-# by convolution with a MS kernel. Near-boundary values are handled
-# by (weighted linear) extrapolation before convolution.
-# 'data' should be a row vector (1xN).
-# 'deg' degree, determines the sharpness of the cutoff in the frequency
-# domain, similar to the degree of Savitzky-Golay filters.
-# 'm' is the halfwidth of the kernel; higher values lead to
-# stronger smoothing.
+% This function smooths the data all the way to the boundaries
+% by convolution with a MS kernel. Near-boundary values are handled
+% by (weighted linear) extrapolation before convolution.
+% 'data' should be a row vector (1xN).
+% 'deg' degree, determines the sharpness of the cutoff in the frequency
+% domain, similar to the degree of Savitzky-Golay filters.
+% 'm' is the halfwidth of the kernel; higher values lead to
+% stronger smoothing.
 function smoothedData = smoothMS(data, deg, m)
   if (nargin != 3)
     error("Usage: smoothMS(dataRowVector, degree, m)");
@@ -49,7 +49,7 @@ function smoothedData = smoothMS(data, deg, m)
   smoothedData = smoothedExtData(m+1 : end-m);
 endfunction
 
-# The same with the shorter MS1 kernel
+% The same with the shorter MS1 kernel
 function smoothedData = smoothMS1(data, deg, m)
   if (nargin != 3)
     error("Usage: smoothMS1(dataRowVector, degree, m)");
@@ -64,7 +64,7 @@ function smoothedData = smoothMS1(data, deg, m)
   smoothedData = smoothedExtData(m+1 : end-m);
 endfunction
 
-# Correction coeffficients for a flat passband of the MS kernel
+% Correction coeffficients for a flat passband of the MS kernel
 function coeffs = corrCoeffsMS(deg)
   switch (deg)
     case (2)
@@ -83,7 +83,7 @@ function coeffs = corrCoeffsMS(deg)
   endswitch
 endfunction
 
-# Correction coeffficients for a flat passband of the MS1 kernel
+% Correction coeffficients for a flat passband of the MS1 kernel
 function coeffs = corrCoeffsMS1(deg)
   switch (deg)
     case (2)
@@ -106,19 +106,19 @@ function coeffs = corrCoeffsMS1(deg)
   endswitch
 endfunction
 
-# Calculates the MS convolution kernel
+% Calculates the MS convolution kernel
 function kernel = kernelMS(deg, m)
   coeffs = corrCoeffsMS(deg);
-  kappa = []; #correction coefficients for the kernel
+  kappa = []; %correction coefficients for the kernel
   for abcd = coeffs'
     kappa(end+1) = abcd(1) + abcd(2)/cube(abcd(3)-m);
   endfor
-  if (rem(deg/2, 2) == 1) #degree 6, 10
+  if (rem(deg/2, 2) == 1) %degree 6, 10
     nuMinus2 = -1;
   else
     nuMinus2 = 0;
   endif
-  kernel(m+1) = windowMS(0, 4); #center element
+  kernel(m+1) = windowMS(0, 4); %center element
   for i = 1 : m
     x = i/(m+1);
     w = windowMS(x, 4);
@@ -134,14 +134,14 @@ function kernel = kernelMS(deg, m)
   kernel = kernel./norm;
 endfunction
 
-# Calculates the MS1 convolution kernel
+% Calculates the MS1 convolution kernel
 function kernel = kernelMS1(deg, m)
   coeffs = corrCoeffsMS1(deg);
   kappa = [];
   for abcd = coeffs'
     kappa(end+1) = abcd(1) + abcd(2)/cube(abcd(3)-m);
   endfor
-  kernel(m+1) = windowMS(0, 2); #center element
+  kernel(m+1) = windowMS(0, 2); %center element
   for i = 1 : m
     x = i/(m+1);
     w = windowMS(x, 2);
@@ -158,15 +158,15 @@ function kernel = kernelMS1(deg, m)
 endfunction
 
 
-# Gaussian-like window function for the MS and MS1 kernels.
-# The function reaches 0 at x=+1 and x=-1 (where the kernel ends);
-# at these points also the 1st derivative is very close to zero.
+% Gaussian-like window function for the MS and MS1 kernels.
+% The function reaches 0 at x=+1 and x=-1 (where the kernel ends);
+% at these points also the 1st derivative is very close to zero.
 function w = windowMS(x, alpha)
   w = exp(-alpha.*x.*x) + exp(-alpha.*(x+2).*(x+2)) + exp(-alpha.*(x-2).*(x-2)) ...
      - (2*exp(-alpha)+exp(-9*alpha));
 endfunction
 
-# Hann-square weights for linear fit at the edges, for MS smoothing.
+% Hann-square weights for linear fit at the edges, for MS smoothing.
 function w = edgeWeights(deg, m)
   beta = 0.70 + 0.14*exp(-0.6*(deg-4));
   fitLengthD = ((m+1)*beta)/(1.5+0.5*deg);
@@ -177,7 +177,7 @@ function w = edgeWeights(deg, m)
   endfor
 endfunction
 
-# Hann-square weights for linear fit at the edges, for MS1 smoothing.
+% Hann-square weights for linear fit at the edges, for MS1 smoothing.
 function w = edgeWeights1(deg, m)
   beta = 0.65 + 0.35*exp(-0.55*(deg-4));
   fitLengthD = ((m+1)*beta)/(1+0.5*deg);
@@ -188,26 +188,26 @@ function w = edgeWeights1(deg, m)
   endfor
 endfunction
 
-# Extends the data by weighted linear extrapolation, for smoothing to the ends
+% Extends the data by weighted linear extrapolation, for smoothing to the ends
 function extData = extendData(data, m, fitWeights)
   datLength = length(data);
   fitLength = length(fitWeights);
   fitX = 1:fitLength;
   fitY = data(1:fitLength);
   [offset, slope] = fitWeighted(fitX, fitY, fitWeights);
-  #fitBasis = [ones(1, fitLength); 1:fitLength];
-  #[params] = LinearRegression (fitBasis', fitY', fitWeights');
+  %fitBasis = [ones(1, fitLength); 1:fitLength];
+  %[params] = LinearRegression (fitBasis', fitY', fitWeights');
   extData(1:m) = offset + (-m+1:0) * slope;
   extData(m+1 : datLength+m) = data;
   fitY = flip(data(datLength-fitLength+1 : datLength));
   [offset, slope] = fitWeighted(fitX, fitY, fitWeights);
-  #[params] = LinearRegression (fitBasis', fitY', fitWeights');
-  #extData(datLength+m+1 : datLength+2*m) = [ones(1, m); 0:-1:-m+1]' * params;
+  %[params] = LinearRegression (fitBasis', fitY', fitWeights');
+  %extData(datLength+m+1 : datLength+2*m) = [ones(1, m); 0:-1:-m+1]' * params;
   extData(datLength+m+1 : datLength+2*m) = offset + (0:-1:-m+1) * slope;
 endfunction
 
-# Weighted linear fit of the data.
-# All inputs must be row vectors of equal length.
+% Weighted linear fit of the data.
+% All inputs must be row vectors of equal length.
 function [offset, slope] = fitWeighted(xData, yData, weights)
   sumWeights = sum(weights);
   sumX  = sum(xData.*weights);
