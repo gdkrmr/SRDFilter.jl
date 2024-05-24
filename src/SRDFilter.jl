@@ -172,11 +172,12 @@ end
 # Weighted linear fit of the data.
 # All inputs must be row vectors of equal length.
 function  fitWeighted(xData::AbstractVector{T}, yData::Vector{T}, weights) where T
+    n = length(xData)
     sumWeights = sum(weights)
-    sumX  = sum(xData .* weights)
-    sumY  = sum(yData .* weights)
-    sumX2 = sum(xData .* xData .* weights)
-    sumXY = sum(xData .* yData .* weights)
+    sumX  = sum(i -> xData[i] * weights[i], 1:n)
+    sumY  = sum(i -> yData[i] * weights[i], 1:n)
+    sumX2 = sum(i -> xData[i] * xData[i] * weights[i] , 1:n)
+    sumXY = sum(i -> xData[i] * yData[i] * weights[i], 1:n)
     varX2 = sumX2 * sumWeights - sumX * sumX
     if varX2 == 0
         slope = T(0)
