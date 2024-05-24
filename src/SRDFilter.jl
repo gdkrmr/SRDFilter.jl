@@ -124,7 +124,7 @@ function kernelMS(deg::Int, m::Int, T::Type)
 end
 
 # Calculates the MS1 convolution kernel
-function kernelMS1(deg::Int, m::Int, T::Type)
+function kernelMS1(deg::Int, m::Int, ::Type{T}) where T
     coeffs = corrCoeffsMS1(deg, T)
     kappa = Vector{T}(undef, size(coeffs, 1))
     for (i, row) in enumerate(eachrow(coeffs))
@@ -215,7 +215,7 @@ function windowMS(x::T, alpha) where T
 end
 
 # Hann-square weights for linear fit at the edges, for MS smoothing.
-function edgeWeights(deg, m, T)
+function edgeWeights(deg, m, ::Type{T}) where T
     beta = T(0.70) + T(0.14) * exp(T(-0.6) * (deg - 4))
     fitLengthD = ((m + 1) * beta)/(T(1.5) + T(0.5) * deg)
     fitLength = floor(Int, fitLengthD)
@@ -228,7 +228,7 @@ function edgeWeights(deg, m, T)
 end
 
 # Hann-square weights for linear fit at the edges, for MS1 smoothing.
-function edgeWeights1(deg, m, T)
+function edgeWeights1(deg, m, ::Type{T}) where T
     beta = T(0.65) + T(0.35) * exp(T(-0.55) * (deg - 4))
     fitLengthD = ((m + 1) * beta) / (1 + T(0.5) * deg)
     fitLength = floor(Int, fitLengthD)
