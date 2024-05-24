@@ -101,17 +101,17 @@ end
 # Calculates the MS convolution kernel
 function kernelMS(deg::Int, m::Int, T::Type)
     coeffs = corrCoeffsMS(deg, T)
-    kappa = T[]
-    for abcd in eachrow(coeffs)
-        push!(kappa, abcd[1] + abcd[2] / cube(abcd[3] - m))
+    kappa = Vector{T}(undef, size(coeffs, 1))
+    for (i, row) in enumerate(eachrow(coeffs))
+        kappa[i] = row[1] + row[2] / (row[3] - m)^3
     end
-    nuMinus2 = (rem(deg / 2, 2) == 1) ? -1 : 0
-    kernel = zeros(m * 2 + 1)
-    kernel[m+1] = windowMS(0, 4) # center element
+    nuMinus2 = (rem(T(deg) / 2, 2) == 1) ? -1 : 0
+    kernel = zeros(T, m * 2 + 1)
+    kernel[m+1] = windowMS(T(0), 4) # center element
     for i in 1:m
-        x = i / (m + 1)
+        x = T(i) / (m + 1)
         w = windowMS(x, 4)
-        a = sin((0.5 * deg + 2) * pi * x) / ((0.5 * deg + 2) * pi * x)
+        a = sin((T(deg) / 2 + 2) * pi * x) / ((T(deg) / 2 + 2) * pi * x)
         for (j, k) in enumerate(kappa)
             a += k * x * sin((2 * j + nuMinus2) * pi * x)
         end
@@ -126,16 +126,16 @@ end
 # Calculates the MS1 convolution kernel
 function kernelMS1(deg::Int, m::Int, T::Type)
     coeffs = corrCoeffsMS1(deg, T)
-    kappa = T[]
-    for abcd in eachrow(coeffs)
-        push!(kappa, abcd[1] + abcd[2] / cube(abcd[3] - m))
+    kappa = Vector{T}(undef, size(coeffs, 1))
+    for (i, row) in enumerate(eachrow(coeffs))
+        kappa[i] = row[1] + row[2] / (row[3] - m)^3
     end
-    kernel = zeros(m * 2 + 1)
+    kernel = zeros(T, m * 2 + 1)
     kernel[m + 1] = windowMS(0, 2) # center element
     for i in 1:m
-        x = i / (m + 1)
+        x = T(i) / (m + 1)
         w = windowMS(x, 2)
-        a = sin((0.5 * deg + 1) * pi * x) / ((0.5 * deg + 1) * pi * x)
+        a = sin((T(deg) / 2 + 1) * pi * x) / ((T(deg) / 2 + 1) * pi * x)
         for (j, k) in enumerate(kappa)
             a += k * x * sin(j * pi * x)
         end
@@ -208,14 +208,12 @@ function extendData(data, m, fitWeights)
     return extData
 end
 
-
-
-
 # Gaussian-like window function for the MS and MS1 kernels.
 # The function reaches 0 at x=+1 and x=-1 (where the kernel ends);
 # at these points also the 1st derivative is very close to zero.
-function windowMS(x, alpha)
-    return exp(-alpha*x*x) + exp(-alpha*(x+2)*(x+2)) + exp(-alpha*(x-2)*(x-2)) - (2*exp(-alpha)+exp(-9*alpha))
+function windowMS(x::T, alpha) where T
+    alphaT = T(alpha)
+    return exp(-alphaT * x * x) + exp(-alphaT * (x + 2) * (x + 2)) + exp(-alphaT * (x - 2) * (x - 2)) - (2 * exp(-alphaT) + exp(-9 * alphaT))
 end
 
 # Hann-square weights for linear fit at the edges, for MS smoothing.
