@@ -56,6 +56,7 @@ function smoothMS1(data::AbstractVector{T}, deg::Int, m::Int) where T
     return smoothedExtData[m + 1:end - m]
 end
 
+# TODO: Make these static?
 # Correction coeffficients for a flat passband of the MS kernel
 function corrCoeffsMS(deg::Int, T::Type)
     if deg == 2
@@ -66,10 +67,10 @@ function corrCoeffsMS(deg::Int, T::Type)
         return T[0.001717576 0.02437382 1.64375;]
     elseif deg == 8
         return T[0.0043993373 0.088211164 2.359375;
-                0.006146815 0.024715371 3.6359375]
+                 0.006146815 0.024715371 3.6359375]
     elseif deg == 10
         return T[0.0011840032 0.04219344 2.746875;
-                0.0036718843 0.12780383 2.7703125]
+                 0.0036718843 0.12780383 2.7703125]
     else
         error("Invalid deg")
     end
@@ -222,7 +223,7 @@ function edgeWeights(deg, m, ::Type{T}) where T
     fitLength = floor(Int, fitLengthD)
     w = zeros(T, fitLength + 1)
     for i in 1:fitLength + 1
-        cosine = cos(T(pi) / 2 * (i - 1) / fitLengthD)
+        cosine = cos(T(0.5) * pi * (i - 1) / fitLengthD)
         w[i] = cosine^2
     end
     return w
@@ -235,7 +236,7 @@ function edgeWeights1(deg, m, ::Type{T}) where T
     fitLength = floor(Int, fitLengthD)
     w = zeros(T, fitLength + 1)
     for i in 1:fitLength + 1
-        cosine = cos(T(pi) / 2 * (i - 1) / fitLengthD)
+        cosine = cos(T(0.5) * pi * (i - 1) / fitLengthD)
         w[i] = cosine^2
     end
     return w
