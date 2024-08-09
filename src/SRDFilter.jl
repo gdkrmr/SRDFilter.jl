@@ -13,6 +13,7 @@ using LinearAlgebra
 export smoothMS, smoothMS1
 
 include("filter.jl")
+include("continuous.jl")
 
 
 end # module SRDFilter
