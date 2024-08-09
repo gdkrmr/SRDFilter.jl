@@ -12,8 +12,13 @@ module SRDFilter
 using LinearAlgebra
 export smoothMS, smoothMS1
 
+#### this file contains the method as described in Schmid et al. (2022)
 include("filter.jl")
-include("continuous.jl")
+
+#### these are for the continuous interpolation version
+include("mskernel.jl")
+include("extrapolation.jl")
+include("interpolation.jl")
 
 
 end # module SRDFilter
