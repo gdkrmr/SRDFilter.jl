@@ -28,13 +28,13 @@ end
 weightedlinear regression
 """
 function linreg(x, y, w)
-    # TODO: look up if this is correct
+    # TODO: this is one way, fitWeighted is another way, see which one is
+    # faster.
     @assert length(x) == length(y) == length(w)
+    w2 = Diagonal(w)
     l = length(x)
-    wx = w .* x
-    wx2 = [ wx zeros(l) ] # do the intercept
-    res = (wx2' * wx2) \ (wx2' * y)
-    a, b = res
+    x2 = [ x ones(l) ]
+    a, b = (x2' * w2 * x2) \ (x2' * w2 * y) # ax + b
     return a, b
 end
 
@@ -74,11 +74,10 @@ function lm_right(x::AbstractArray{T},
         i -= 1
     end
 
-    xlm = @view x[end:-1:end - i]
-    ylm = @view x[end:-1:end - 1]
+    xlm = @view x[end:-1:i + 1]
+    ylm = @view y[end:-1:i + 1]
 
-   # TODO: to the linear regression and return a, b
-   a, b = linreg(xlm, ylm, w)
+    a, b = linreg(xlm, ylm, w)
    return a, b
 end
 
@@ -97,7 +96,7 @@ function lm_left(x::AbstractArray{T},
 
     ###### extend right side
     i = 2
-    w = T[1] # this is the point at the border
+    w = T[1] # this is the point at the border, weight is one
     while true
         # TODO: do we need to test for i > length(x) here?
         if i > length(x)
@@ -118,8 +117,8 @@ function lm_left(x::AbstractArray{T},
         i += 1
     end
 
-    xlm = @view x[1:lw]
-    ylm = @view x[1:lw]
+    xlm = @view x[1:i - 1]
+    ylm = @view y[1:i - 1]
 
     a, b = linreg(xlm, ylm, w)
 
