@@ -63,8 +63,8 @@ n: degree
 used for n <= 4
 """
 function a_default(x, alpha, n::Int)
-        xsinc = (n + 4) / 2 * pi * x
-        return w(x, alpha) * Base.sinc(xsinc)
+    xsinc = (n + 4) / 2 * x
+    return w(x, alpha) * Base.sinc(xsinc)
 end
 
 
