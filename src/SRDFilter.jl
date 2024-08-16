@@ -19,6 +19,7 @@ include("filter.jl")
 include("mskernel.jl")
 include("extrapolation.jl")
 include("interpolation.jl")
+include("derivative.jl")
 
 
 end # module SRDFilter

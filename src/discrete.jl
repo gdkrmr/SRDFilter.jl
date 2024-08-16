@@ -1,16 +1,18 @@
-
-# using GLMakie
-# using CSV
-# using DataFrames
-
 # This function smooths the data all the way to the boundaries
 # by convolution with a MS kernel. Near-boundary values are handled
 # by (weighted linear) extrapolation before convolution.
+#
 # 'data' should be a row vector (1xN).
-# 'deg' degree, determines the sharpness of the cutoff in the frequency
-# domain, similar to the degree of Savitzky-Golay filters.
-# 'm' is the halfwidth of the kernel; higher values lead to
-# stronger smoothing.
+#
+# 'deg' degree, determines the sharpness of the cutoff in the frequency domain,
+# similar to the degree of Savitzky-Golay filters.
+#
+# 'm' is the halfwidth of the kernel; higher values lead to stronger smoothing.
+#
+#
+# This code was taken and translated from the matlab version of the original
+# publication (Schmid, Rath, and Diebold, 2022). The code ist tested numerically
+# against that version (see test/ directory).
 
 """
     smoothMS(data::AbstractVector{T}, deg::Int, m::Int) where T
