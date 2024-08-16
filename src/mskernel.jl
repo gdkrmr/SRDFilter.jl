@@ -78,8 +78,13 @@ only needed for n > 4
 function a_better(x, alpha, n::Int, m::Int)
     nu = isodd(n / 2) ? 1 : 2
     xsinc = (n + 4) / 2 * x
-    correction_f(j) = kappa(n, j, m) * x * sinpi((2 * j + nu) * x)
-    correction = sum(correction_f, 0:1)
+    # paper says \sum_j but j \in {0, 1}
+    correction0 = kappa(0, n, m) * x * sinpi(nu * x)
+    correction1 = kappa(1, n, m) * x * sinpi((2 + nu) * x)
+    correction = correction0 + correction1
+    # the matlab code uses nu - 2, no idea why, this is the correct formula and
+    # numerically closer to the matlab version than nu - 2
+
     return w(x, alpha) * (Base.sinc(xsinc) + correction)
 end
 
@@ -90,13 +95,23 @@ the kernel function, i are supposed to be discrete values
 n: degree
 m: kernel half-width
 """
-function a(i::AbstractArray, n, m)
+function a(i::Number, n, m)
     alpha = 4
-    if n <= 4
-        vals = a_default.(x.(i, m), alpha, n)
+    if -m < i < m
+        if n <= 4
+            vals = a_default(x(i, m), alpha, n)
+        else
+            vals = a_better(x(i, m), alpha, n, m)
+        end
     else
-        vals = a_better.(x.(i, m), alpha, n, m)
+        vals = 0.0
     end
+    return vals
+
+end
+
+function a(i::AbstractArray, n, m)
+    vals = a.(i, n, m)
     Ainv = sum(vals) # eq. 6
     return vals ./ Ainv
 end
