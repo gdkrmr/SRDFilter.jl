@@ -14,12 +14,14 @@ m = 40
 df = CSV.read("data/ResultsLai.csv", DataFrame, header = false)
 
 x = 1.0:nrow(df)
+xnew = 1.0:0.01:nrow(df)
 y = df[:, 1]
 
 # using JuliaInterpreter
 # breakpoint(SRDFilter.interpolate)
 
 @time ycont = SRDFilter.interpolate(x, x, y, n, m);
+@time ycontnew = SRDFilter.interpolate(xnew, x, y, n, m);
 @time yfir = smoothMS(y, n, m);
 extrema(ycont .- yfir)
 
@@ -28,6 +30,7 @@ ax = Axis(fig[1, 1])
 lines!(ax, x, y, label = "y")
 lines!(ax, x, yfir, label = "yfir")
 lines!(ax, x, ycont, label = "ycont")
+lines!(ax, xnew, ycontnew, label = "ycontnew")
 ax2 = Axis(fig[2, 1])
 lines!(ax2, x, yfir .- ycont, label = "yfir - ycont")
 Legend(fig[1, 2], ax)
