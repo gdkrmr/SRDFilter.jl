@@ -1,6 +1,6 @@
 # Modified Sinc Kernel Smoothing
 
-Details see Schmid et al. (2022). Code translated from their Matlab
+Details see [Schmid et al. (2022)](https://pubs.acs.org/doi/10.1021/acsmeasuresciau.1c00054). Code translated from their Matlab
 implementation and tested against it.
 
 # Usage
