@@ -28,3 +28,7 @@
 # \]
 
 # Compute the derivatives and sum them up as specified.
+
+
+# Kernel interpolations does the same, see
+# https://joshualampert.github.io/KernelInterpolation.jl/stable/tutorial_differentiating_interpolation/#Applying-differential-operators
