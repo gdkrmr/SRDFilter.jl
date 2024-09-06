@@ -163,7 +163,7 @@ endfunction
 % at these points also the 1st derivative is very close to zero.
 function w = windowMS(x, alpha)
   w = exp(-alpha.*x.*x) + exp(-alpha.*(x+2).*(x+2)) + exp(-alpha.*(x-2).*(x-2)) ...
-     - (2*exp(-alpha)+exp(-9*alpha));
+     - (2*exp(-alpha)-exp(-9*alpha));
 endfunction
 
 % Hann-square weights for linear fit at the edges, for MS smoothing.

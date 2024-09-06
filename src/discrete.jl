@@ -205,7 +205,7 @@ end
 # at these points also the 1st derivative is very close to zero.
 function windowMS(x::T, alpha) where T
     alphaT = T(alpha)
-    return exp(-alphaT * x * x) + exp(-alphaT * (x + 2) * (x + 2)) + exp(-alphaT * (x - 2) * (x - 2)) - (2 * exp(-alphaT) + exp(-9 * alphaT))
+    return exp(-alphaT * x * x) + exp(-alphaT * (x + 2) * (x + 2)) + exp(-alphaT * (x - 2) * (x - 2)) - (2 * exp(-alphaT) - exp(-9 * alphaT))
 end
 
 # Hann-square weights for linear fit at the edges, for MS smoothing.
