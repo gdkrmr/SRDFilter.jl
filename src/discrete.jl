@@ -164,7 +164,7 @@ end
 
 # Weighted linear fit of the data.
 # All inputs must be row vectors of equal length.
-function  fitWeighted(xData::AbstractVector{T}, yData::Vector{T}, weights) where T
+function  fitWeighted(xData::AbstractVector{T}, yData::AbstractVector{T}, weights) where T
     n = length(xData)
     sumWeights = sum(weights)
     sumX  = sum(i -> xData[i] * weights[i], 1:n)

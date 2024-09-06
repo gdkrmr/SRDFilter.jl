@@ -36,12 +36,15 @@ lines!(ax2, x, yfir .- ycont, label = "yfir - ycont")
 Legend(fig[1, 2], ax)
 Legend(fig[2, 2], ax2)
 
+
+n = 10
+m = 10
 fig2 = Figure()
 ax1 = Axis(fig2[1, 1])
 ax2 = Axis(fig2[2, 1])
 ax3 = Axis(fig2[3, 1])
 a1 = SRDFilter.kernelMS(n, m, Float64)
-a2 = SRDFilter.a(-m:m, n, m)
+a2 = SRDFilter.a(collect(-m:m), n, m)
 lines!(ax1, -m:m, a1, label = "kernelMS")
 lines!(ax2, -m:m, a2, label = "a")
 lines!(ax3, -m:m, a1 .- a2, label = "kernelMS - a")
@@ -49,6 +52,31 @@ extrema(a1 .- a2)
 
 
 
+n = 10
+m = 10
+T = Float32
+ci = 2
+
+file = "../test/data/smooth/MS_ResultsLai_deg_10_m_10.csv"
+data_smooth = CSV.File(file, header = false) |>
+    CSV.Tables.matrix |>
+    x -> x[:, ci] .|>
+    T
+
+t = eltype(data_smooth).(collect(1:length(data_smooth)))
+y = smoothMS(data_smooth, deg = deg, m = m)
+ycont = SRDFilter.interpolate(t, t, data_smooth, deg, m)
+extrema(y .- ycont)
+
+degs = [2, 4, 6, 8, 10]
+ms = collect(1:10)
+for n in degs
+    for m in ms
+        a1 = SRDFilter.kernelMS(n, m, Float64)
+        a2 = SRDFilter.a(-m:m, n, m)
+        @show n m extrema(a1 .- a2)
+    end
+end
 
 w = [ SRDFilter.wfit(i, n, m) for i in 0:m-1 ]
 w2 = filter(x -> x > 0, w)

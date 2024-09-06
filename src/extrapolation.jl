@@ -26,6 +26,10 @@ end
 
 """
 weightedlinear regression
+
+this has the problem that we can get singularities in \\, the function by the
+original authors does not have this problem
+
 """
 function linreg(x, y, w)
     # TODO: this is one way, fitWeighted is another way, see which one is
@@ -77,7 +81,9 @@ function lm_right(x::AbstractArray{T},
     xlm = @view x[end:-1:i + 1]
     ylm = @view y[end:-1:i + 1]
 
-    a, b = linreg(xlm, ylm, w)
+    # NOTE: linreg can produce singularities
+    # a, b = linreg(xlm, ylm, w)
+    b, a = fitWeighted(xlm, ylm, w)
    return a, b
 end
 
@@ -120,7 +126,9 @@ function lm_left(x::AbstractArray{T},
     xlm = @view x[1:i - 1]
     ylm = @view y[1:i - 1]
 
-    a, b = linreg(xlm, ylm, w)
+    # NOTE: linreg can produce singularities
+    # a, b = linreg(xlm, ylm, w)
+    b, a = fitWeighted(xlm, ylm, w)
 
     return a, b
 end
