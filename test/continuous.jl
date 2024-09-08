@@ -1,8 +1,9 @@
 using Pkg
-Pkg.offline(true)
+# Pkg.offline(true)
 Pkg.activate("srdtest", shared = true)
 
 
+using LinearAlgebra
 using GLMakie
 using SRDFilter
 using CSV
@@ -39,12 +40,13 @@ Legend(fig[2, 2], ax2)
 
 n = 10
 m = 10
+T = Float32
 fig2 = Figure()
 ax1 = Axis(fig2[1, 1])
 ax2 = Axis(fig2[2, 1])
 ax3 = Axis(fig2[3, 1])
 a1 = SRDFilter.kernelMS(n, m, Float64)
-a2 = SRDFilter.a(collect(-m:m), n, m)
+a2 = SRDFilter.a(T.(collect(-m:m)), n, m)
 lines!(ax1, -m:m, a1, label = "kernelMS")
 lines!(ax2, -m:m, a2, label = "a")
 lines!(ax3, -m:m, a1 .- a2, label = "kernelMS - a")
@@ -56,17 +58,55 @@ n = 10
 m = 10
 T = Float32
 ci = 2
-
 file = "../test/data/smooth/MS_ResultsLai_deg_10_m_10.csv"
 data_smooth = CSV.File(file, header = false) |>
     CSV.Tables.matrix |>
     x -> x[:, ci] .|>
     T
-
 t = eltype(data_smooth).(collect(1:length(data_smooth)))
-y = smoothMS(data_smooth, deg = deg, m = m)
-ycont = SRDFilter.interpolate(t, t, data_smooth, deg, m)
+y = SRDFilter.smoothMS(data_smooth, n, m)
+ycont = SRDFilter.interpolate(t, t, data_smooth, n, m)
 extrema(y .- ycont)
+lines(y .- ycont)
+
+varX2 = 0.06217410988057037
+offset = -16210.454835929333
+slope = 39661.63646306257
+fitX = 1.0:1.0:2.0
+fitY = [-793446.285239884, -771325.532923279]
+fitWeights = [1.0, 0.06217410988057054]
+varX2 = 0.06217410988057037
+offset = -815567.0375564876
+slope = 22120.75231660364
+
+
+a_left = 39661.63646306236
+b_left = -16210.454835929097
+a_right = -22120.75231086372
+b_right = 1.91152307945378e7
+
+begin
+T = Float32
+xlm = T[900.0, 899.0]
+w = T[1.0, 0.06217411]
+ylm = T[-793446.285239884, -771325.532923279]
+sum(xlm .* xlm .* w) * sum(w) - sum(xlm .* w) * sum(xlm .* w)
+([xlm [1, 1]]' * Diagonal(w) * [xlm [1, 1]]) \ ([xlm [1, 1]]' * Diagonal(w) * ylm)
+end;
+SRDFilter.linreg(xlm, ylm, w)
+SRDFilter.fitWeighted(xlm, ylm, w)
+
+
+file = "data/smooth/MS_ResultsLai_deg_2_m_1.csv"
+
+
+
+
+
+
+ai .- kernel
+yi .- extData[end - length(yi) + 1:end]
+
 
 degs = [2, 4, 6, 8, 10]
 ms = collect(1:10)
