@@ -88,10 +88,11 @@ function lm_right(x::AbstractArray{T},
 
     xlm = @view x[end:-1:i + 1]
     ylm = @view y[end:-1:i + 1]
+    #xlm = 1.0:length(ylm)
 
     # NOTE: linreg can produce singularities
-    # a, b = linreg(xlm, ylm, w)
-    b, a = fitWeighted(xlm, ylm, w)
+    a, b = linreg(xlm, ylm, w)
+    #b, a = fitWeighted(xlm, ylm, w)
    return a, b
 end
 
@@ -135,8 +136,8 @@ function lm_left(x::AbstractArray{T},
     ylm = @view y[1:i - 1]
 
     # NOTE: linreg can produce singularities
-    # a, b = linreg(xlm, ylm, w)
-    b, a = fitWeighted(xlm, ylm, w)
+    a, b = linreg(xlm, ylm, w)
+    #b, a = fitWeighted(xlm, ylm, w)
 
     return a, b
 end

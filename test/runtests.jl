@@ -81,9 +81,13 @@ err_cont = Float64[]
                         # TODO: make this work for ranges, Int, and other types
                         t = T.(collect(1:length(x)))
                         ycont = SRDFilter.interpolate(t, t, x, deg, m)
-                        @show par_to_filename("MS", file, deg, m) deg m T ci extrema(ycont .- testres_ms[:, ci])
-                        # TODO: This is still way to inaccurate
-                        @test ycont ≈ testres_ms[:, ci] atol = 1e4
+                        # TODO: This is still way to inaccurate. The reason is
+                        # that the intercept can be quite far off and the slope
+                        # can be quite steep. With Flotat32 this can lead to
+                        # serious inaccuracies. TODO: make the regressions so
+                        # that they always start at 0. This is how it is
+                        # actually done in the octave code.
+                        @test ycont ≈ testres_ms[:, ci] atol = 1e1
                         # TODO: make this work for arbitrary types
                         #@test eltype(ycont) == eltype(y)
 
