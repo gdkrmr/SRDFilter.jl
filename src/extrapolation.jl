@@ -31,14 +31,22 @@ this has the problem that we can get singularities in \\, the function by the
 original authors does not have this problem
 
 """
-function linreg(x, y, w)
+function linreg(x, y::AbstractVector{T}, w) where T
     # TODO: this is one way, fitWeighted is another way, see which one is
     # faster.
+    # NOTE: This one is numerically more accurate!
     @assert length(x) == length(y) == length(w)
     w2 = Diagonal(w)
     l = length(x)
     x2 = [ x ones(l) ]
-    a, b = (x2' * w2 * x2) \ (x2' * w2 * y) # ax + b
+    xx = (x2' * w2 * x2)
+    # if m = 1, the system of equations is singular
+    if rank(xx) < 2
+        a = T(0)
+        b = ((y' * w) - a * (x' * w)) / sum(w);
+    else
+        a, b = (x2' * w2 * x2) \ (x2' * w2 * y) # ax + b
+    end
     return a, b
 end
 
