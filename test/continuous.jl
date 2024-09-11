@@ -8,6 +8,90 @@ using GLMakie
 using SRDFilter
 using CSV
 using DataFrames
+using SRDFilter
+
+
+function par_to_filename(method, filename, deg, m)
+    basename = split(filename, ".")[1]
+    return "../test/data/smooth/$(method)_$(basename)_deg_$(deg)_m_$(m).csv"
+end
+
+par_to_testresult(method, filename, deg, m, T) =
+    CSV.File(par_to_filename(method, filename, deg, m), header = false) |>
+    CSV.Tables.matrix .|>
+    T
+
+i = 1
+ci = 1
+T = Float32
+m = 1
+deg = 2
+file = "ResultsLai.csv"
+data = CSV.File("../test/data/$(file)", header = false) |> CSV.Tables.matrix |> x -> x[:, ci] .|> T
+res = par_to_testresult("MS", file, deg, m, T)[:, ci]
+smoothfil = SRDFilter.smoothMS(data, deg, m)
+x = collect(T(1):length(data)) .+ 1_000_000
+smothcont = SRDFilter.interpolate(x, x, data, deg, m)
+
+
+@code_warntype SRDFilter.expand_right!(x, data, deg, m)
+@code_warntype SRDFilter.lm_left(x, data, deg, m)
+w = T[1, 2, 3, 4]
+@code_warntype SRDFilter.linreg(x, data, w)
+
+@code_warntype SRDFilter.interpolate(x, x, data, deg, m)
+@code_warntype SRDFilter.interpolate(x[1], x, data, deg, m)
+
+using JET
+@report_opt SRDFilter.interpolate(x, x, data, deg, m)
+@report_opt SRDFilter.linreg(x, data, w)
+
+using Cthulhu
+@descend SRDFilter.interpolate(x, x, data, deg, m)
+
+a, b = [1, 2]
+
+function f(x::AbstractVector{T}, y, w) where T
+    x2 = [x ones(T, length(x))]
+    x3 = (x2' * Diagonal(w) * x2)
+     x3 \ (x' * Diagonal(w) * y)
+end
+
+x = T[1, 2, 3]
+y = T[1, 2, 3]
+w = T[1, 2, 3]
+@report_opt f(x, y, w)
+
+
+f(::Type{T}) where T = string(T)
+f(Float32)
+
+@code_warntype SRDFilter.a(1f0, 2, 2)
+@code_warntype SRDFilter.a([1f0], 2, 2)
+@code_warntype SRDFilter.a_default(1f0, 4, 2)
+@code_warntype SRDFilter.a_better(1f0, 4, 2, 2)
+@code_warntype SRDFilter.w(1f0, 4)
+
+
+fig = Figure()
+ax0 = Axis(fig[1, 1])
+lines!(ax0, x, data, label = "data")
+lines!(ax0, x, smoothfil, label = "smoothfil")
+lines!(ax0, x, smothcont, label = "smothcont")
+lines!(ax0, x, res, label = "res")
+Legend(fig[1, 2], ax0)
+ax1 = Axis(fig[2, 1])
+lines!(ax1, x, smoothfil .- res, label = "smoothfil - smothcont")
+lines!(ax1, x, smothcont .- res, label = "smothcont - res")
+Legend(fig[2, 2], ax1)
+
+
+
+
+
+
+
+
 
 n = 8
 m = 40
@@ -63,6 +147,40 @@ data_smooth = CSV.File(file, header = false) |>
     CSV.Tables.matrix |>
     x -> x[:, ci] .|>
     T
+
+data_rough = "../test/data/ResultsLai.csv" |>
+    x -> CSV.File(x, header = false) |>
+    CSV.Tables.matrix |>
+    x -> x[:, ci] .|>
+    T
+
+
+SRDFilter.interpolate(T(1), collect(T(1):length(data_rough)), data_rough, n, m)
+
+x_left = Float32[-9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0, 0.0]
+y_left = [-277908.95248296217, -247151.44336747847, -216393.93425199474, -185636.42513651104, -154878.9160210273, -124121.4069055436, -93363.89779005988, -62606.388674576156, -31848.879559092442, -1091.3704436087235]
+23451.18275928195
+
+
+Evaluated:
+[0.15835884531613056, -0.46217518548785597, -1.008098621556303, -1.5204907403192778, -1.9821019170810614, -2.512756040996683, -2.957128829118962, -0.5906786605713916, -1.2192869459451743, 5.286105202110527, 10.461619519603236, 6.826742464105779, 2.492367430378482, 1.0422038091960275, 0.032646599192894275]
+[0.15835885,           0.11657466,          -0.09224721,         0.03165689,         -0.05481473,         -0.05436219,         0.51054827,        -0.59067866,         -1.21928695,         5.2861052,         10.46161952, 6.82674246, 2.49236743, 1.04220381, 0.0326466]
+
+
+
+
+deg = 6 # degree
+m = 7   # kernel halfwidth
+data = Float64[0, 1, -2, 3, -4, 5, -6, 7, -8, 9, 10, 6, 3, 1, 0];
+x = collect(1.0:length(data))
+res = [0.15835885, 0.11657466, -0.09224721, 0.03165689, -0.05481473, -0.05436219,
+       0.51054827, -0.59067866, -1.21928695, 5.28610520, 10.46161952, 6.82674246,
+       2.49236743, 1.04220381, 0.03264660]
+
+SRDFilter.interpolate(x, x, data, deg, m)
+SRDFilter.smoothMS(data, deg, m)
+
+
 t = eltype(data_smooth).(collect(1:length(data_smooth)))
 y = SRDFilter.smoothMS(data_smooth, n, m)
 ycont = SRDFilter.interpolate(t, t, data_smooth, n, m)
@@ -100,6 +218,14 @@ SRDFilter.fitWeighted(xlm, ylm, w)
 file = "data/smooth/MS_ResultsLai_deg_2_m_1.csv"
 
 
+(xlm, ylm, w) = ([1.0], [1.19787587285916e6], [1.0])
+
+SRDFilter.linreg(xlm, ylm, w)
+SRDFilter.fitWeighted(xlm, ylm, w)
+
+[xlm [1]]' * Diagonal(w) * [xlm [1]] |> rank
+
+sum(xlm .* xlm .* w) * sum(w) - sum(xlm .* w) * sum(xlm .* w)
 
 
 

@@ -3,48 +3,24 @@
 # anything. This is an experiment and I have no idea how well this works.
 #
 
-# With the high precision numbers from the table:
-# # maximum(err_disc) = 8.5
-# # mean(err_disc) = 0.25217936249226114
-# # maximum(err_cont) = 8.0987135e6
-# # mean(err_cont) = 153912.13688329546
-#
-# with the low precision numbers from the matlab code:
-# # maximum(err_disc) = 8.5
-# # mean(err_disc) = 0.25217936249226114
-# # maximum(err_cont) = 8.0970035e6
-# # mean(err_cont) = 153882.95751185901
-#
-#
-# With high precision numbers and the corrected w() function
-# # maximum(err_disc) = 8.5
-# # mean(err_disc) = 0.25217936249226114
-# # maximum(err_cont) = 8.0987135e6
-# # mean(err_cont) = 153912.13688329546
-
 """
 returns the values from table 1
 a, b, c
 """
-function abc(j, n)
+function abc(j, n, ::Type{T}) where T
     if j == 0 && n == 6
-        # 0.00172, 0.02437, 1.64375
-        0.001717576, 0.02437382, 1.64375
+        T(0.001717576), T(0.02437382), T(1.64375)
     elseif j == 0 && n == 8
-        # 0.00440, 0.08821, 2.35938
-        0.0043993373, 0.088211164, 2.359375
+        T(0.0043993373), T(0.088211164), T(2.359375)
     elseif j == 1 && n == 8
-        # 0.00615, 0.02472, 3.63594
-        0.006146815, 0.024715371, 3.6359375
+        T(0.006146815), T(0.024715371), T(3.6359375)
     elseif j == 0 && n == 10
-        # 0.00118, 0.04219, 2.74688
-        0.0011840032, 0.04219344, 2.746875
+        T(0.0011840032), T(0.04219344), T(2.746875)
     elseif j == 1 && n == 10
-        # 0.00367, 0.12780, 2.77031
-        0.0036718843, 0.12780383, 2.7703125
+        T(0.0036718843), T(0.12780383), T(2.7703125)
     else
         # this makes iteration easier because kappa(j, n, m) becomes 0
-        0.0, 0.0, 0.0
+        T(0), T(0), T(0)
     end
 end
 
@@ -52,8 +28,8 @@ end
 """
 eq. 8
 """
-function kappa(j, n, m)
-    a, b, c = abc(j, n)
+function kappa(j, n, m, ::Type{T}) where T
+    a, b, c = abc(j, n, T)
     kappa = a + b / (c - m) ^ 3
     return kappa
 end
@@ -61,12 +37,13 @@ end
 """
 eq. 4
 """
-function w(x, alpha)
-    exp1 = exp(-alpha * x * x)
-    exp2 = exp(-alpha * (x + 2) ^ 2)
-    exp3 = exp(-alpha * (x - 2) ^ 2)
-    exp4 = 2 * exp(-alpha)
-    exp5 = exp(-9 * alpha)
+function w(x::T, alpha) where T
+    alphaT = T(alpha)
+    exp1 = exp(-alphaT * x * x)
+    exp2 = exp(-alphaT * (x + 2) ^ 2)
+    exp3 = exp(-alphaT * (x - 2) ^ 2)
+    exp4 = 2 * exp(-alphaT)
+    exp5 = exp(-9 * alphaT)
     return exp1 + exp2 + exp3 - exp4 - exp5
     #                                ^ corrected this from + which is in the octave code.
 end
@@ -87,8 +64,8 @@ n: degree
 
 used for n <= 4
 """
-function a_default(x, alpha, n::Int)
-    xsinc = (n + 4) / 2 * x
+function a_default(x::T, alpha, n::Int) where T
+    xsinc = T(n + 4) / 2 * x
     return w(x, alpha) * Base.sinc(xsinc)
 end
 
@@ -100,16 +77,15 @@ like a but with better passband response
 
 only needed for n > 4
 """
-function a_better(x, alpha, n::Int, m::Int)
+function a_better(x::T, alpha, n::Int, m::Int) where T
     nu = isodd(n / 2) ? 1 : 2
-    # nu = nu - 2
-    xsinc = (n + 4) / 2 * x
+    xsinc = T(n + 4) / 2 * x
     # paper says \sum_j but j \in {0, 1}
-    correction0 = kappa(0, n, m) * x * sinpi(nu * x)
-    correction1 = kappa(1, n, m) * x * sinpi((2 + nu) * x)
+    correction0 = kappa(0, n, m, T) * x * sinpi(nu * x)
+    correction1 = kappa(1, n, m, T) * x * sinpi((2 + nu) * x)
     correction = correction0 + correction1
-    # the matlab code uses nu - 2, no idea why, this is the correct formula and
-    # numerically closer to the matlab version than nu - 2
+    # the matlab code uses nu - 2, this is because they iterate for j in 1:2 and
+    # not 0:1
     return w(x, alpha) * (Base.sinc(xsinc) + correction)
 end
 
@@ -120,7 +96,7 @@ the kernel function, i are supposed to be discrete values
 n: degree
 m: kernel half-width
 """
-function a(i::Number, n, m)
+function a(i::T, n, m) where T <: Number
     alpha = 4
     if -m <= i <= m
         if n <= 4
@@ -129,7 +105,7 @@ function a(i::Number, n, m)
             vals = a_better(x(i, m), alpha, n, m)
         end
     else
-        vals = 0.0
+        vals = T(0.0)
     end
     return vals
 end

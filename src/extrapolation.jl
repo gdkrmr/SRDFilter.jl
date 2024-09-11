@@ -5,7 +5,7 @@ eq. 18
 
 beta for the boundary extrapolation
 """
-beta(n) = 0.7 + 0.14 * exp(-0.6 * (n - 4))
+beta(n, ::Type{T}) where T = T(0.7) + T(0.14) * exp(T(-0.6) * (n - 4))
 
 """
 
@@ -13,14 +13,14 @@ weights for the linear extrapolation of the data for the MS filter
 
 eq. 17
 """
-function wfit(i, n, m)
+function wfit(i::T, n, m) where T
     num = i * (n + 3)
-    denom = 4 * beta(n) * (m + 1)
+    denom = 4 * beta(n, T) * (m + 1)
     x = num / denom
-    if x < 0.5
+    if x < T(0.5)
         return cospi(x) ^ 2
     else
-        return 0.0
+        return T(0.0)
     end
 end
 
@@ -31,21 +31,22 @@ this has the problem that we can get singularities in \\, the function by the
 original authors does not have this problem
 
 """
-function linreg(x, y::AbstractVector{T}, w) where T
+function linreg(x::AbstractVector{T}, y::AbstractVector{T}, w) where T
     # TODO: this is one way, fitWeighted is another way, see which one is
     # faster.
     # NOTE: This one is numerically more accurate!
     @assert length(x) == length(y) == length(w)
     w2 = Diagonal(w)
     l = length(x)
-    x2 = [ x ones(l) ]
+    x2 = [ x ones(T, l) ]
     xx = (x2' * w2 * x2)
     # if m = 1, the system of equations is singular
     if rank(xx) < 2
         a = T(0)
         b = ((y' * w) - a * (x' * w)) / sum(w);
     else
-        a, b = (x2' * w2 * x2) \ (x2' * w2 * y) # ax + b
+        yw = x2' * w2 * y
+        a, b = xx \ yw
     end
     return a, b
 end
@@ -91,8 +92,8 @@ function lm_right(x::AbstractArray{T},
     #xlm = 1.0:length(ylm)
 
     # NOTE: linreg can produce singularities
-    a, b = linreg(xlm, ylm, w)
-    #b, a = fitWeighted(xlm, ylm, w)
+    # a, b = linreg(xlm, ylm, w)
+    b, a = fitWeighted(xlm, ylm, w)
    return a, b
 end
 
@@ -136,8 +137,8 @@ function lm_left(x::AbstractArray{T},
     ylm = @view y[1:i - 1]
 
     # NOTE: linreg can produce singularities
-    a, b = linreg(xlm, ylm, w)
-    #b, a = fitWeighted(xlm, ylm, w)
+    #a, b = linreg(xlm, ylm, w)
+    b, a = fitWeighted(xlm, ylm, w)
 
     return a, b
 end
