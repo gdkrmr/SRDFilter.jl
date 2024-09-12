@@ -167,10 +167,10 @@ end
 function  fitWeighted(xData::AbstractVector{T}, yData::AbstractVector{T}, weights) where T
     n = length(xData)
     sumWeights = sum(weights)
-    sumX  = sum(i -> xData[i] * weights[i], 1:n)
-    sumY  = sum(i -> yData[i] * weights[i], 1:n)
-    sumX2 = sum(i -> xData[i] * xData[i] * weights[i], 1:n)
-    sumXY = sum(i -> xData[i] * yData[i] * weights[i], 1:n)
+    sumX = xData' * weights
+    sumY = yData' * weights
+    sumX2 = sum(xData .* xData .* weights)
+    sumXY = sum(xData .* yData .* weights)
     varX2 = sumX2 * sumWeights - sumX * sumX
     if varX2 == 0
         slope = T(0)
@@ -205,7 +205,7 @@ end
 # at these points also the 1st derivative is very close to zero.
 function windowMS(x::T, alpha) where T
     alphaT = T(alpha)
-    return exp(-alphaT * x * x) + exp(-alphaT * (x + 2) * (x + 2)) + exp(-alphaT * (x - 2) * (x - 2)) - (2 * exp(-alphaT) - exp(-9 * alphaT))
+    return exp(-alphaT * x * x) + exp(-alphaT * (x + 2) * (x + 2)) + exp(-alphaT * (x - 2) * (x - 2)) - (2 * exp(-alphaT) + exp(-9 * alphaT))
 end
 
 # Hann-square weights for linear fit at the edges, for MS smoothing.

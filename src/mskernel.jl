@@ -45,7 +45,6 @@ function w(x::T, alpha) where T
     exp4 = 2 * exp(-alphaT)
     exp5 = exp(-9 * alphaT)
     return exp1 + exp2 + exp3 - exp4 - exp5
-    #                                ^ corrected this from + which is in the octave code.
 end
 
 """
