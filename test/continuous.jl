@@ -44,6 +44,8 @@ w = T[1, 2, 3, 4]
 
 using JET
 @report_opt SRDFilter.interpolate(x, x, data, deg, m)
+@report_opt SRDFilter.smoothMS(data, deg, m)
+
 @report_opt SRDFilter.linreg(x, data, w)
 
 using Cthulhu
