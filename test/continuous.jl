@@ -54,7 +54,8 @@ a, b = [1, 2]
 function f(x::AbstractVector{T}, y, w) where T
     x2 = [x ones(T, length(x))]
     x3 = (x2' * Diagonal(w) * x2)
-     x3 \ (x' * Diagonal(w) * y)
+    y2 = (x' * Diagonal(w) * y)
+     x3 \ y2
 end
 
 x = T[1, 2, 3]
