@@ -33,6 +33,7 @@ smoothfil = SRDFilter.smoothMS(data, deg, m)
 x = collect(T(1):length(data)) .+ 1_000_000
 smothcont = SRDFilter.interpolate(x, x, data, deg, m)
 
+@time SRDFilter.interpolate(x[1], x, data, deg, m);
 
 @code_warntype SRDFilter.expand_right!(x, data, deg, m)
 @code_warntype SRDFilter.lm_left(x, data, deg, m)
@@ -44,7 +45,71 @@ w = T[1, 2, 3, 4]
 
 using JET
 @report_opt SRDFilter.interpolate(x, x, data, deg, m)
-@report_opt SRDFilter.smoothMS(data, deg, m)
+@report_opt SRDFilter.smoothMS(data, deg, m);
+
+function g1(x, y, w)
+  sum(i -> x[i] * y[i] * w[i], 1:length(x))
+end
+function g2(x, y, w)
+    sum(x .* y .* w)
+end
+function g3(x::AbstractArray{T}, y::AbstractArray{T}, w::AbstractArray{T}) where T
+    l = length(x)
+    r = T(0)
+    @inbounds for i in 1:l
+        r += x[i] * y[i] * w[i]
+    end
+    return r
+end
+function g4(x, y, w)
+    x .*= y
+    x .*= w
+    sum(x)
+end
+function g5(x, y, w)
+    T = promote_type(eltype(x), eltype(y), eltype(w))
+    r = zero(T)
+    for i in eachindex(x, y, w)
+        r += x[i] * y[i] * w[i]
+    end
+    return r
+end
+function g6(x, y, w)
+    T = promote_type(eltype(x), eltype(y), eltype(w))
+    r = zero(T)
+    @simd for i in eachindex(x, y, w)
+        r += x[i] * y[i] * w[i]
+    end
+    return r
+end
+g7(x, y, z) = sum(splat(*), zip(x, y, z))
+g8(x, y, z) = sum(x[i] .* y[i] .* z[i] for i in eachindex(x, y, z))
+n = 10
+x1 = rand(n)
+y1 = rand(n)
+w1 = rand(n)
+@benchmark g1($x1, $y1, $w1)
+@benchmark g2($x1, $y1, $w1)
+@benchmark g3($x1, $y1, $w1)
+#@benchmark g4($x1, $y1, $w1)
+@benchmark g5($x1, $y1, $w1)
+@benchmark g6($x1, $y1, $w1)
+@benchmark g7($x1, $y1, $w1)
+@benchmark g8($x1, $y1, $w1)
+@code_warntype g5(x1, y1, w1)
+@report_opt g1(x1, y1, w1)
+@report_opt g2(x1, y1, w1)
+@report_opt g3(x1, y1, w1)
+@report_opt g4(x1, y1, w1)
+@report_opt g5(x1, y1, w1)
+@report_opt g6(x1, y1, w1)
+@report_opt g7(x1, y1, w1)
+@report_opt g8(x1, y1, w1)
+
+using Cthulhu
+@descend g1(x1, y1, w1)
+
+@report_opt g(x, data, w)
 
 @report_opt SRDFilter.linreg(x, data, w)
 
