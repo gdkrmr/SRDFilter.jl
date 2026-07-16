@@ -1,7 +1,30 @@
 
 
 """
-interpolate for a single number
+    interpolate(xnew, x, y::AbstractVector{T}, n, m)
+
+Interpolate for a single number or vector of values `xnew` using the data points `x` and `y` with parameters `n` and `m`.
+
+Warning: untested and possible performance issues. Use with caution.
+
+# Example
+
+    deg = 6 # degree
+    m = 7   # kernel halfwidth
+
+    y = Float64[0, 1, -2, 3, -4, 5, -6, 7, -8, 9, 10, 6, 3, 1, 0];
+    x = collect(1.0:length(y))
+
+    xnew = collect(1.0:0.5:length(y))
+
+    ynew = SRDFilter.interpolate(xnew, x, y, deg, m)
+"""
+function interpolate end
+
+
+
+"""
+interpolate for a single value.
 """
 function interpolate(xnew::Number,
                      x, y::AbstractVector{T},

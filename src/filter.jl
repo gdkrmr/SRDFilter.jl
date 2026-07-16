@@ -18,6 +18,13 @@
 Smoothes a vector `data` with a modified sinc kernel. The `deg` parameter
 specifies the degree of the polinomial and `m` the halfwidth of the kernel.
 
+# Example:
+
+    deg = 6 # degree
+    m = 7   # kernel halfwidth
+
+    data = Float64[0, 1, -2, 3, -4, 5, -6, 7, -8, 9, 10, 6, 3, 1, 0];
+    out = smoothMS(data, deg, m);
 """
 function smoothMS(data::AbstractVector{T}, deg::Int, m::Int) where T
     kernel = kernelMS(deg, m, T)
@@ -36,6 +43,13 @@ smoothMS(data; deg=4, m=6) = smoothMS(data, deg, m)
 Smoothes a vector `data` with a modified sinc kernel. The `deg` parameter
 specifies the degree of the polinomial and `m` the halfwidth of the kernel.
 
+# Example:
+
+    deg = 6 # degree
+    m = 7   # kernel halfwidth
+
+    data = Float64[0, 1, -2, 3, -4, 5, -6, 7, -8, 9, 10, 6, 3, 1, 0];
+    out = smoothMS1(data, deg, m);
 """
 function smoothMS1(data::AbstractVector{T}, deg::Int, m::Int) where {T}
     kernel = kernelMS1(deg, m, T)
@@ -167,7 +181,7 @@ function  fitWeighted(xData::AbstractVector{T}, yData::Vector{T}, weights) where
     sumWeights = sum(weights)
     sumX  = sum(i -> xData[i] * weights[i], 1:n)
     sumY  = sum(i -> yData[i] * weights[i], 1:n)
-    sumX2 = sum(i -> xData[i] * xData[i] * weights[i] , 1:n)
+    sumX2 = sum(i -> xData[i] * xData[i] * weights[i], 1:n)
     sumXY = sum(i -> xData[i] * yData[i] * weights[i], 1:n)
     varX2 = sumX2 * sumWeights - sumX * sumX
     if varX2 == 0
