@@ -1,7 +1,7 @@
 name = "SRDFilter"
 uuid = "8500e8d5-1f20-45da-94c5-1be0b4131781"
 authors = ["Guido Kraemer <guido.kraemer@uni-leipzig.de>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
