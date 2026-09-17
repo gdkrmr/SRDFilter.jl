@@ -16,4 +16,4 @@ test = ["Test", "CSV", "DataFrames"]
 
 [compat]
 julia = "1.6"
-LinearAlgebra = "1"
+LinearAlgebra = "1, < 0.0.1"
